@@ -6,7 +6,7 @@ import {
   saveMessage,
 } from "$lib/server/db";
 
-export async function GET({ url }) {
+export async function GET({ url }: { url: URL }) {
   const conversationId = url.searchParams.get("conversationId");
   if (!conversationId) {
     return json({ error: "Conversation ID is required" }, { status: 400 });
@@ -16,7 +16,7 @@ export async function GET({ url }) {
   return json(messages);
 }
 
-export async function POST({ request }) {
+export async function POST({ request }: { request: Request }) {
   const { messages, conversationId } = await request.json();
 
   let currentConversationId = conversationId;
@@ -89,7 +89,11 @@ export async function POST({ request }) {
         }
 
         // Save assistant message to the database
-        saveMessage(currentConversationId, "assistant", assistantResponse);
+        const message = saveMessage(currentConversationId, "assistant", assistantResponse);
+
+        // Send the message ID in a special event
+        const messageIdEvent = `data: ${JSON.stringify({ messageId: message.lastInsertRowid })}\n\n`;
+        controller.enqueue(encoder.encode(messageIdEvent));
 
         controller.close();
       },

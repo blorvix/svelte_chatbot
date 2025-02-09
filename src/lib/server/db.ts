@@ -13,6 +13,8 @@ db.exec(`
     conversation_id INTEGER,
     role TEXT,
     content TEXT,
+    upvotes INTEGER DEFAULT 0,
+    downvotes INTEGER DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (conversation_id) REFERENCES conversations (id)
   );
@@ -26,12 +28,12 @@ export function saveMessage(
   const stmt = db.prepare(
     "INSERT INTO messages (conversation_id, role, content) VALUES (?, ?, ?)",
   );
-  stmt.run(conversationId, role, content);
+  return stmt.run(conversationId, role, content);
 }
 
 export function getConversation(conversationId: number) {
   const stmt = db.prepare(
-    "SELECT role, content FROM messages WHERE conversation_id = ? ORDER BY created_at",
+    "SELECT id, role, content, upvotes, downvotes FROM messages WHERE conversation_id = ? ORDER BY created_at"
   );
   return stmt.all(conversationId);
 }
@@ -72,4 +74,13 @@ export function deleteConversation(conversationId: number) {
   deleteConversation.run(conversationId);
 
   session.changeset();
+}
+
+export function updateVote(messageId: number, voteType: 'upvote' | 'downvote') {
+  const stmt = db.prepare(`
+    UPDATE messages 
+    SET ${voteType}s = ${voteType}s + 1 
+    WHERE id = ? AND role = 'assistant'
+  `);
+  return stmt.run(messageId);
 }
