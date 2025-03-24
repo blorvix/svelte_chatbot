@@ -36,3 +36,13 @@ npm run build
 You can preview the production build with `npm run preview`.
 
 > To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+
+
+
+## Tasks
+
+1. Make the text `input` a `textarea` and style it so that the entire user's message is visible before sending.
+2. Move conversation fetching from client-side to server-side using a +page.server.ts file.
+3. Add a loading state to the Chat UI.
+4. Implement Markdown parsing.
+5. Assistant response voting functionality.
